@@ -1,0 +1,52 @@
+version: '3'
+
+services:
+  nginx:
+    image: nginx:latest
+    networks:
+      - api
+    ports:
+      - "9999:8080"
+    depends_on:
+      - boilerplate
+    volumes:
+      - ./nginx/conf.d/:/etc/nginx/conf.d
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/index.html:/usr/share/nginx/html/index.html
+    restart: always
+  db:
+    image: postgres:16.2-alpine
+    networks:
+      - api
+    ports:
+      - "5432:5432"
+    volumes:
+      - ~/code/docker/volumes/boilerplate/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=changeme
+      - POSTGRES_USER=boilerplate
+      - POSTGRES_DB=boilerplate
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  boilerplate:
+    image: ghcr.io/fikshun/go-backend:local
+    ports:
+      - "9998:8080"
+    networks:
+      - api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - POSTGRES_PASSWORD=changeme
+      - POSTGRES_USER=boilerplate
+      - POSTGRES_DB=boilerplate
+      - POSTGRES_PORT=5432
+      - POSTGRES_HOST=db
+      - JWT_SECRET_KEY=SuperSecretKey
+networks:
+  api:
+  ui:
