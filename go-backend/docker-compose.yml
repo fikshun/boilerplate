@@ -32,7 +32,7 @@ services:
       timeout: 5s
       retries: 5
   boilerplate:
-    image: ghcr.io/fikshun/go-backend:local
+    image: ghcr.io/<registry>/go-backend:local
     ports:
       - "9998:8080"
     networks:
